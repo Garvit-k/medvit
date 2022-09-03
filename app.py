@@ -20,12 +20,11 @@ class_index = {
     "4": "Hand",
     "5": "HeadCT"}
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
+device = torch.device("cpu")
 model = timm.create_model(model_name='vit_base_patch8_224', pretrained=True, img_size=32, in_chans=1, num_classes=6,
                           drop_rate=0.1).to(device)
 
-model.load_state_dict(torch.load("pretrainedbestmodel.pth"))
+model.load_state_dict(torch.load("pretrainedbestmodel.pth",map_location ='cpu'))
 
 model.eval()
 
@@ -43,9 +42,6 @@ def get_prediction(image_bytes):
     tensor = transform_image(image_bytes=image_bytes).to(device)
     with torch.no_grad():
         outputs = model(tensor)
-    print("model output")
-    print(outputs)
-    print("--------------")
     _, y_hat = outputs.max(1)
     probabilities = torch.nn.functional.softmax(outputs[0], dim=0)
     return probabilities
@@ -141,4 +137,4 @@ def success():
 
 
 if __name__ == "__main__":
-    app.run(debug=False)
+    app.run(host="0.0.0.0",port=80,debug=False)
